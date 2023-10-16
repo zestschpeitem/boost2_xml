@@ -20,12 +20,9 @@ class XMLElement
             tree.add_child("device.model", modeltree);
         }
 
-        void Model(const string & filename)
+        void Model()
         {
-            for (int i = 0; i < 1; i++) {
-                AddNewModel("Axis", "P7214", "5.50.2");
-            }
-            write_xml(filename, tree);
+            AddNewModel("Axis", "P7214", "5.50.2");
         }
 
 
@@ -35,35 +32,39 @@ class XMLElement
             tree.add_child("device.credentialsRef", credentialsRef);
         }
 
-        void CredentialsRef(const string& filename)
+        void CredentialsRef()
         {
-            for (int i = 0; i < 1; i++) {
-                AddNewCredentialsRef("creds");
-            }
-            write_xml(filename, tree);
+            AddNewCredentialsRef("creds");
         }
 
-        void AddNewVideoSourceRef(const string& videoSourceRef1, const string& videoStreamingRef, const string& detectorRef, const string& detectorRef1, const string& detectorRef2, const string& maxCount){
+        void AddNewVideoSourceRef(const string& videoSourceRef1, const string& videoStreamingRef, const string& default1, const string& id, const string& id1, const string& id2, const string& maxCount){
             pt::ptree videoSourceRef;
+            struct { string id, maxCount; } data[] = {
+        { id, maxCount },
+        { id1, maxCount },
+        { id2, maxCount },
+            };
             videoSourceRef.add("<xmlattr>.id", videoSourceRef1);
             videoSourceRef.add("videoStreamingRef.<xmlattr>.id", videoStreamingRef);
-            videoSourceRef.add("videoStreamingRef.<xmlattr>.maxCount", maxCount);
-            videoSourceRef.add("detectorRef.<xmlattr>.id", detectorRef);
-            videoSourceRef.add("detectorRef.<xmlattr>.maxCount", maxCount);
-            videoSourceRef.add("detectorRef1.<xmlattr>.id", detectorRef1);
-            videoSourceRef.add("detectorRef1.<xmlattr>.maxCount", maxCount);
-            videoSourceRef.add("detectorRef2.<xmlattr>.id", detectorRef2);
-            videoSourceRef.add("detectorRef2.<xmlattr>.maxCount", maxCount);
+            videoSourceRef.add("videoStreamingRef.<xmlattr>.default", default1);
+
+            for (auto& item : data) {
+                pt::ptree detectorRef;
+                detectorRef.add("<xmlattr>.id", item.id);
+                detectorRef.add("<xmlattr>.maxCount", item.maxCount);
+                videoSourceRef.add_child("detectorRef", detectorRef);
+            };
+            videoSourceRef.erase(id2);
             tree.add_child("device.videoSourceRef", videoSourceRef);
 
         }
-        void VideoSourceRef(const string& filename)
+
+
+        void VideoSourceRef()
         {
-            for (int i = 0; i < 2; i++) {
-                AddNewVideoSourceRef("video_source_for_P7214", "vs_P712", "motion_detection","tampering_detection","audio_detection","1");
-            }
-            write_xml(filename, tree);
+            AddNewVideoSourceRef("video_source_for_P7214", "vs_P712", "true", "motion_detection","tampering_detection","audio_detection","1");
         }
+
 
         void AddNewTelemetryRef(const string& telemetryRef1) {
             pt::ptree telemetryRef;
@@ -71,12 +72,9 @@ class XMLElement
             tree.add_child("device.telemetryRef", telemetryRef);
         }
 
-        void TelemetryRef(const string& filename)
+        void TelemetryRef()
         {
-            for (int i = 0; i < 4; i++) {
-                AddNewTelemetryRef("telemetry_P7214");
-            }
-            write_xml(filename, tree);
+            AddNewTelemetryRef("telemetry_P7214");
         }
 
 
@@ -86,12 +84,9 @@ class XMLElement
             tree.add_child("device.audioSourceRef", audioSourceRef);
         }
 
-        void AudioSourceRef(const string& filename)
+        void AudioSourceRef()
         {
-            for (int i = 0; i < 2; i++) {
-                AddNewAudioSourceRef("as_g711_g726_aac_8-64_positive_gain");
-            }
-            write_xml(filename, tree);
+            AddNewAudioSourceRef("as_g711_g726_aac_8-64_positive_gain");
         }
 
 
@@ -101,12 +96,9 @@ class XMLElement
             tree.add_child("device.audioDestinationRef", audioDestinationRef);
         }
 
-        void AudioDestinationRef(const string& filename)
+        void AudioDestinationRef()
         {
-            for (int i = 0; i < 1; i++) {
-                AddNewAudioDestinationRef("ad_g711_g726_output_gain_9_53");
-            }
-            write_xml(filename, tree);
+            AddNewAudioDestinationRef("ad_g711_g726_output_gain_9_53");
         }
 
         void AddNewSerialPortRef(const string& serialPortRef1) {
@@ -115,12 +107,9 @@ class XMLElement
             tree.add_child("device.serialPortRef", serialPortRef);
         }
 
-        void SerialPortRef(const string& filename)
+        void SerialPortRef()
         {
-            for (int i = 0; i < 1; i++) {
-                AddNewSerialPortRef("serial_axis_P72");
-            }
-            write_xml(filename, tree);
+            AddNewSerialPortRef("serial_axis_P72");
         }
 
         void AddNewIoDeviceRef(const string& ioDeviceRef1) {
@@ -129,14 +118,22 @@ class XMLElement
             tree.add_child("device.ioDeviceRef", ioDeviceRef);
         }
 
-        void IoDeviceRef(const string& filename)
+        void IoDeviceRef()
         {
-            for (int i = 0; i < 1; i++) {
-                AddNewIoDeviceRef("iodev_4x4_configurable");
-            }
+            AddNewIoDeviceRef("iodev_4x4_configurable");
+        }
+
+        void WriteXML(const string& filename){
+            Model();
+            CredentialsRef();
+            VideoSourceRef();
+            TelemetryRef();
+            AudioSourceRef();
+            AudioDestinationRef();
+            SerialPortRef();
+            IoDeviceRef();
             write_xml(filename, tree);
         }
-        //write_xml("debug_settings_out.xml", tree);
 };
 
 //массив моделей отдельные элементы множества.
@@ -145,13 +142,6 @@ class XMLElement
 int main()
 {
     XMLElement element; // объявление объекта
-    element.Model("debug_settings_out.xml");
-    element.CredentialsRef("debug_settings_out.xml");
-    element.VideoSourceRef("debug_settings_out.xml");
-    element.TelemetryRef("debug_settings_out.xml");
-    element.AudioSourceRef("debug_settings_out.xml");
-    element.AudioDestinationRef("debug_settings_out.xml");
-    element.SerialPortRef("debug_settings_out.xml");
-    element.IoDeviceRef("debug_settings_out.xml");
+    element.WriteXML("debug_settings_out.xml");
     return 0;
 }
