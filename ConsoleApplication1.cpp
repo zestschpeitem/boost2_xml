@@ -1,9 +1,7 @@
 ﻿#include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <string>
-#include <exception>
 #include <iostream>
-#include <set>
 
 using namespace std;
 namespace pt = boost::property_tree;
@@ -27,24 +25,22 @@ class XMLElement
             tree.add_child("device.credentialsRef", credentialsRef);
         }
 
-
-        /*void AddNewDetectorRef(const int count, const string& parametrs[count] =, const string& maxCount) {
+        pt::ptree detectorRef;
+        void AddNewDetectorRef(const string& id, const string& maxCount) {
             pt::ptree detectorRef;
             detectorRef.add("<xmlattr>.id", id);
             detectorRef.add("<xmlattr>.maxCount", maxCount);
-            tree.add_child("device.videoSourceRef.detectorRef", detectorRef);
         }
 
-
-        void AddNewVideoSourceRef(const string& videoSourceRef1, const string& videoStreamingRef, const string& default1){
+        void AddNewVideoSourceRef(const string& videoSourceRef1, const string& videoStreamingRef, const string& default1) {
             pt::ptree videoSourceRef;
             videoSourceRef.add("<xmlattr>.id", videoSourceRef1);
             videoSourceRef.add("videoStreamingRef.<xmlattr>.id", videoStreamingRef);
             videoSourceRef.add("videoStreamingRef.<xmlattr>.default", default1);
-
+            videoSourceRef.add_child("detectorRef", detectorRef);
             tree.add_child("device.videoSourceRef", videoSourceRef);
+            
         }
-        */
 
         void AddNewTelemetryRef(const string& telemetryRef1) {
             pt::ptree telemetryRef;
@@ -95,19 +91,13 @@ int main()
 
     element.AddNewCredentialsRef("creds");
 
-    //element.AddNewVideoSourceRef( "video_source_for_P7214", "vs_P712", "true");
+    element.AddNewVideoSourceRef( "video_source_for_P7214", "vs_P712", "true");
 
-    //element.AddNewDetectorRef("motion_detection","1");
+    element.AddNewDetectorRef("motion_detection", "1");
 
-    element.AddNewTelemetryRef("telemetry_P7214");
+    element.AddNewVideoSourceRef("video_source_for_P7214", "vs_P712", "true");
 
-    element.AddNewAudioSourceRef("as_g711_g726_aac_8-64_positive_gain");
-
-    element.AddNewAudioDestinationRef("ad_g711_g726_output_gain_9_53");
-
-    element.AddNewSerialPortRef("serial_axis_P72");
-
-    element.AddNewIoDeviceRef("iodev_4x4_configurable");
+    element.AddNewDetectorRef("motion_detection", "1");
 
     element.WriteXML("debug_settings_out.xml");
 
