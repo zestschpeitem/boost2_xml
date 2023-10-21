@@ -2,7 +2,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <string>
 #include <iostream>
-
+#include <list>
 using namespace std;
 namespace pt = boost::property_tree;
 
@@ -25,22 +25,37 @@ class XMLElement
             tree.add_child("device.credentialsRef", credentialsRef);
         }
 
-        pt::ptree detectorRef;
-        void AddNewDetectorRef(const string& id, const string& maxCount) {
-            pt::ptree detectorRef;
-            detectorRef.add("<xmlattr>.id", id);
-            detectorRef.add("<xmlattr>.maxCount", maxCount);
-        }
-
         void AddNewVideoSourceRef(const string& videoSourceRef1, const string& videoStreamingRef, const string& default1) {
             pt::ptree videoSourceRef;
             videoSourceRef.add("<xmlattr>.id", videoSourceRef1);
             videoSourceRef.add("videoStreamingRef.<xmlattr>.id", videoStreamingRef);
             videoSourceRef.add("videoStreamingRef.<xmlattr>.default", default1);
-            videoSourceRef.add_child("detectorRef", detectorRef);
-            tree.add_child("device.videoSourceRef", videoSourceRef);
             
+            tree.add_child("device.videoSourceRef", videoSourceRef);
         }
+
+        void AddNewDetectorRef(const string& videoSourceRef_id, const string& id, const string& maxCount) {
+            pt::ptree detectorRef;
+
+            detectorRef.add("<xmlattr>.id", id);
+            detectorRef.add("<xmlattr>.maxCount", maxCount);
+            pt::ptree::const_assoc_iterator it;
+            it = tree.find("device");
+            if (it != tree.not_found()) {
+                for (auto& m : tree.get_child("device")) {
+                    for (auto& p : m.second) {
+                        for (auto& c : p.second) {
+                            if (c.second.data() == videoSourceRef_id)
+                            {
+                                tree.add_child("device.videoSourceRef.detectorRef", detectorRef);
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
 
         void AddNewTelemetryRef(const string& telemetryRef1) {
             pt::ptree telemetryRef;
@@ -93,11 +108,11 @@ int main()
 
     element.AddNewVideoSourceRef( "video_source_for_P7214", "vs_P712", "true");
 
-    element.AddNewDetectorRef("motion_detection", "1");
+    element.AddNewDetectorRef("video_source_for_P7214", "motion_detection", "1");
+    element.AddNewDetectorRef("video_source_for_P7214", "motion_detection", "1");
 
-    element.AddNewVideoSourceRef("video_source_for_P7214", "vs_P712", "true");
-
-    element.AddNewDetectorRef("motion_detection", "1");
+    element.AddNewVideoSourceRef("video_source_for_P721411111", "vs_P712", "true");
+    element.AddNewDetectorRef("video_source_for_P721411111", "motion_detection", "1");
 
     element.WriteXML("debug_settings_out.xml");
 
