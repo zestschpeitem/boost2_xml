@@ -37,26 +37,32 @@ class XMLElement
         }
 
         void AddNewDetectorRef(const string& videoSourceRef_id, const string& id, const string& maxCount) {
-            pt::ptree detectorRef;
-            detectorRef.add("<xmlattr>.id", id);
-            detectorRef.add("<xmlattr>.maxCount", maxCount);
-            pt::ptree::const_assoc_iterator it;
-            it = tree.find("device");
-            if (it != tree.not_found()) {
-                auto& propset1 = tree.get_child("device");
-                for (auto& propset2 : tree.get_child("device")) {
-                    for (auto& p : propset2.second) {
-                        for (auto& c : p.second) {
-                            if (c.second.data() == videoSourceRef_id) {
-                                auto& propset3 = propset2.get_child(propset2.first.data());
-                                propset3.add_child("detectorRef", detectorRef);
-                            }
-                        }
-                    }
+            bool flag = false;
+            auto it = tree.find("device");
+            if (it == tree.not_found())
+                return ;
+
+            for (auto& i : it->second) {
+                if (i.first != "videoSourceRef") 
+                    continue;
+
+                auto videoId = i.second.get_child_optional("<xmlattr>.id");
+                if (videoId && videoId->data() == videoSourceRef_id) {
+
+                    pt::ptree detectorRef;
+                    detectorRef.add("<xmlattr>.id", id);
+                    detectorRef.add("<xmlattr>.maxCount", maxCount);
+                    i.second.add_child("detectorRef", detectorRef);  
+                    flag = true;
                 }
             }
+            if (flag == true) {
+                cout << "true" << endl;
+            }
+            else {
+                cout << "false" << endl;
+            }
         }
-
 
         void AddNewTelemetryRef(const string& telemetryRef1) {
             pt::ptree telemetryRef;
@@ -110,8 +116,9 @@ int main()
     element.AddNewVideoSourceRef("video_source_for_P721411", "vs_P712", "true");
     element.AddNewVideoSourceRef("video_source_for_P721413333333", "vs_P712", "true");
 
-    element.AddNewDetectorRef("video_source_for_P721411", "motion_detection", "1");
+    element.AddNewDetectorRef("video_source_for_P7214", "motion_detection", "1");
     element.AddNewDetectorRef("video_source_for_P72141111111", "motion_detection", "1");
+    element.AddNewDetectorRef("video_source_for_P7", "motion_detection", "1");
     element.WriteXML("debug_settings_out.xml");
 
 
