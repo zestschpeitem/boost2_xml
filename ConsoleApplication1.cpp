@@ -36,33 +36,29 @@ class XMLElement
             tree.add_child("device.videoSourceRef", videoSourceRef);
         }
 
-        void AddNewDetectorRef(const string& videoSourceRef_id, const string& id, const string& maxCount) {
-            bool flag = false;
-            auto it = tree.find("device");
-            if (it == tree.not_found())
-                return ;
+        bool AddNewDetectorRef(const string& videoSourceRef_id, const string& id, const string& maxCount) {
+            auto our_tree = tree.find("device");
+            if (our_tree == tree.not_found()) {
+                return false;
+            }
 
-            for (auto& i : it->second) {
-                if (i.first != "videoSourceRef") 
+            for (auto& iterator : our_tree->second) {
+                if (iterator.first != "videoSourceRef") {
                     continue;
-
-                auto videoId = i.second.get_child_optional("<xmlattr>.id");
-                if (videoId && videoId->data() == videoSourceRef_id) {
-
+                }
+                auto videoID = iterator.second.get_child_optional("<xmlattr>.id");
+                if (videoID && videoID ->data() == videoSourceRef_id) {
                     pt::ptree detectorRef;
                     detectorRef.add("<xmlattr>.id", id);
                     detectorRef.add("<xmlattr>.maxCount", maxCount);
-                    i.second.add_child("detectorRef", detectorRef);  
-                    flag = true;
+                    iterator.second.add_child("detectorRef", detectorRef);
+                    return true;
                 }
             }
-            if (flag == true) {
-                cout << "true" << endl;
-            }
-            else {
-                cout << "false" << endl;
-            }
+            return false;
         }
+
+
 
         void AddNewTelemetryRef(const string& telemetryRef1) {
             pt::ptree telemetryRef;
